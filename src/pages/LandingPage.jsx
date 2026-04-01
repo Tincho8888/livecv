@@ -1,261 +1,126 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { supabase } from "../supabaseClient";
 
-export default function LandingPage() {
+export default function LoginPage() {
   const navigate = useNavigate();
-  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    // Verificar si ya hay sesión activa
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/editor");
+      }
+    });
+
+    // Escuchar cambios en autenticación
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        navigate("/editor");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/editor`
+      }
+    });
+
+    if (error) {
+      console.error("Error al iniciar sesión:", error);
+    }
+  };
 
   return (
-    <div style={{ 
+    <div style={{
       minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
       background: "#0a0a0a",
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-      color: "#ffffff",
-      margin: 0,
-      padding: 0
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
     }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&display=swap');
-        
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-        
-        body {
-          background: #0a0a0a;
-          margin: 0;
-          padding: 0;
-          position: relative;
-        }
-        
-        body::before {
-          content: "";
-          position: absolute;
-          width: 800px;
-          height: 800px;
-          background: radial-gradient(circle, #3d1fd1, transparent 70%);
-          opacity: 0.25;
-          filter: blur(120px);
-          top: -250px;
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 0;
-        }
-        
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-
-      <nav style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "16px 64px",
-        background: scrolled ? "rgba(10,10,10,0.9)" : "transparent",
-        backdropFilter: scrolled ? "blur(12px)" : "none",
-        transition: "all 0.3s ease"
+      <div style={{
+        textAlign: "center",
+        maxWidth: 400,
+        padding: 40
       }}>
-        <div style={{ 
+        <div style={{
           display: "flex",
           flexDirection: "column",
-          lineHeight: 0.9
+          lineHeight: 0.9,
+          marginBottom: 40,
+          alignItems: "center"
         }}>
           <span style={{
-            fontSize: 20,
+            fontSize: 48,
             fontWeight: 900,
-            letterSpacing: -0.5,
+            letterSpacing: -1,
             color: "#ffffff"
           }}>LIVE</span>
           <span style={{
-            fontSize: 10,
+            fontSize: 20,
             fontWeight: 500,
-            letterSpacing: 2,
+            letterSpacing: 4,
             color: "#ffffff",
             opacity: 0.6
           }}>CV</span>
         </div>
-        <button 
-          onClick={() => navigate("/login")}
+
+        <h2 style={{
+          fontSize: 24,
+          fontWeight: 600,
+          color: "#ffffff",
+          marginBottom: 12
+        }}>
+          Crea tu CV profesional
+        </h2>
+
+        <p style={{
+          fontSize: 16,
+          color: "#999",
+          marginBottom: 32
+        }}>
+          Iniciá sesión para continuar
+        </p>
+
+        <button
+          onClick={handleGoogleLogin}
           style={{
-            background: "transparent",
+            background: "#ffffff",
+            color: "#0a0a0a",
             border: "none",
-            color: "#ffffff",
-            padding: "8px 0",
+            padding: "14px 32px",
+            borderRadius: 8,
+            fontSize: 16,
+            fontWeight: 600,
             cursor: "pointer",
-            fontSize: 14,
-            fontWeight: 500,
-            opacity: 0.5,
-            transition: "opacity 0.2s"
-          }}
-          onMouseEnter={e => e.target.style.opacity = "1"}
-          onMouseLeave={e => e.target.style.opacity = "0.5"}
-        >
-          Iniciar sesión
-        </button>
-      </nav>
-
-      <section style={{
-        maxWidth: 1100,
-        margin: "0 auto",
-        padding: "80px 64px 40px",
-        textAlign: "center",
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center"
-      }}>
-        <div style={{ animation: "fadeIn 1s ease-out" }}>
-          <h1 style={{
-            fontFamily: "'Playfair Display', serif",
-            fontSize: "clamp(56px, 7vw, 96px)",
-            fontWeight: 800,
-            lineHeight: 1.1,
-            marginBottom: 24,
-            letterSpacing: -2,
-            background: "linear-gradient(135deg, #ffffff 0%, #ffffff 15%, #60a5fa 45%, #a78bfa 70%, #c084fc 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text"
-          }}>
-            Tu perfil profesional, vivo.
-          </h1>
-
-          <p style={{
-            fontSize: 18,
-            color: "#999",
-            lineHeight: 1.6,
-            marginBottom: 40,
-            maxWidth: 700,
-            margin: "0 auto 40px",
-            fontWeight: 400
-          }}>
-            Creá tu cv profesional y mantenelo siempre en línea.<br/>
-            Optimizalo con nuestro potente editor y revisá los cambios en tiempo real.
-          </p>
-
-          <div style={{
+            width: "100%",
             display: "flex",
+            alignItems: "center",
             justifyContent: "center",
-            gap: 50,
-            marginBottom: 40,
-            flexWrap: "wrap"
-          }}>
-            <div style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 8,
-              maxWidth: 170
-            }}>
-              <span style={{ fontSize: 26 }}>⚡</span>
-              <div style={{
-                fontSize: 16,
-                color: "#d1d1d1",
-                fontWeight: 600,
-                textAlign: "center"
-              }}>
-                Crealo en minutos
-              </div>
-              <p style={{
-                fontSize: 12,
-                color: "#888",
-                margin: 0,
-                textAlign: "center",
-                lineHeight: 1.4
-              }}>
-                Subí tu PDF o arrancá de cero
-              </p>
-            </div>
-
-            <div style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 8,
-              maxWidth: 170
-            }}>
-              <span style={{ fontSize: 26 }}>✨</span>
-              <div style={{
-                fontSize: 16,
-                color: "#d1d1d1",
-                fontWeight: 600,
-                textAlign: "center"
-              }}>
-                Optimizalo con IA
-              </div>
-              <p style={{
-                fontSize: 12,
-                color: "#888",
-                margin: 0,
-                textAlign: "center",
-                lineHeight: 1.4
-              }}>
-                Mejoramos tu CV automáticamente
-              </p>
-            </div>
-
-            <div style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 8,
-              maxWidth: 170
-            }}>
-              <span style={{ fontSize: 26 }}>🔗</span>
-              <div style={{
-                fontSize: 16,
-                color: "#d1d1d1",
-                fontWeight: 600,
-                textAlign: "center"
-              }}>
-                Compartilo en un link
-              </div>
-              <p style={{
-                fontSize: 12,
-                color: "#888",
-                margin: 0,
-                textAlign: "center",
-                lineHeight: 1.4
-              }}>
-                URL única siempre actualizada
-              </p>
-            </div>
-          </div>
-
-          <button 
-            onClick={() => navigate("/login")}
-            style={{
-              background: "linear-gradient(135deg, #ffffff 0%, #ffffff 25%, #c4b5fd 60%, #a78bfa 100%)",
-              color: "#0a0a0a",
-              border: "none",
-              padding: "14px 36px",
-              borderRadius: 6,
-              fontSize: 15,
-              fontWeight: 600,
-              cursor: "pointer",
-              letterSpacing: 0.2,
-              boxShadow: "0 0 40px rgba(255,255,255,0.15), 0 0 80px rgba(255,255,255,0.1)"
-            }}
-          >
-            Creá tu CV ahora gratis
-          </button>
-        </div>
-      </section>
+            gap: 12,
+            transition: "all 0.2s"
+          }}
+          onMouseEnter={e => e.target.style.transform = "translateY(-2px)"}
+          onMouseLeave={e => e.target.style.transform = "translateY(0)"}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Continuar con Google
+        </button>
+      </div>
     </div>
   );
 }

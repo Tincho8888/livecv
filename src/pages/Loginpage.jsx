@@ -9,21 +9,13 @@ export default function LoginPage() {
   const [showEmailForm, setShowEmailForm] = useState(false);
 
   useEffect(() => {
+    // Solo verificar sesión inicial, no escuchar cambios
+    // Esto previene interferir con el redirectTo de OAuth
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         navigate("/editor");
       }
     });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        navigate("/editor");
-      }
-    });
-
-    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleOAuthLogin = async (provider) => {

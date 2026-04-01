@@ -1,126 +1,362 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../supabaseClient";
+import { useEffect, useState } from "react";
 
-export default function LoginPage() {
+export default function LandingPage() {
   const navigate = useNavigate();
+  const [scrolled, setScrolled] = useState(false);
+  const [hoveredCard, setHoveredCard] = useState(null);
 
   useEffect(() => {
-    // Verificar si ya hay sesión activa
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate("/editor");
-      }
-    });
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-    // Escuchar cambios en autenticación
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        navigate("/editor");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/editor`
-      }
-    });
-
-    if (error) {
-      console.error("Error al iniciar sesión:", error);
+  const bentoCards = [
+    {
+      id: 1,
+      icon: "📄",
+      title: "Carga tu PDF",
+      desc: "Arrastrá tu CV actual o créalo desde cero con nuestro editor.",
+      color: "#8b5cf6",
+      delay: 0
+    },
+    {
+      id: 2,
+      icon: "✨",
+      title: "Optimizalo con IA",
+      desc: "Mejoramos tu CV automáticamente para que destaque.",
+      color: "#6366f1",
+      delay: 0.1
+    },
+    {
+      id: 3,
+      icon: "🔗",
+      title: "Compartilo en un link",
+      desc: "URL única, siempre actualizada y lista para enviar.",
+      color: "#a78bfa",
+      delay: 0.2
     }
-  };
+  ];
 
   return (
-    <div style={{
+    <div style={{ 
       minHeight: "100vh",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
       background: "#0a0a0a",
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      color: "#ffffff",
+      margin: 0,
+      padding: 0,
+      position: "relative",
+      overflow: "hidden"
     }}>
-      <div style={{
-        textAlign: "center",
-        maxWidth: 400,
-        padding: 40
+      <style>{`
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        
+        body {
+          background: #0a0a0a;
+          margin: 0;
+          padding: 0;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float1 {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-12px); }
+        }
+
+        @keyframes float2 {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+        }
+
+        @keyframes float3 {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+
+        @keyframes float4 {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-14px); }
+        }
+
+        .bento-card-1 {
+          animation: float1 6s ease-in-out infinite;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bento-card-2 {
+          animation: float2 5s ease-in-out infinite;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bento-card-3 {
+          animation: float3 7s ease-in-out infinite;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bento-card-4 {
+          animation: float4 5.5s ease-in-out infinite;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bento-card-1:hover,
+        .bento-card-2:hover,
+        .bento-card-3:hover,
+        .bento-card-4:hover {
+          transform: translateY(-6px) scale(1.02);
+        }
+      `}</style>
+
+      {/* Nav */}
+      <nav style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "20px 64px",
+        background: scrolled ? "rgba(10,10,10,0.9)" : "transparent",
+        backdropFilter: scrolled ? "blur(12px)" : "none",
+        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.05)" : "none",
+        transition: "all 0.3s ease"
       }}>
-        <div style={{
+        <div style={{ 
           display: "flex",
           flexDirection: "column",
-          lineHeight: 0.9,
-          marginBottom: 40,
-          alignItems: "center"
+          lineHeight: 0.9
         }}>
           <span style={{
-            fontSize: 48,
+            fontSize: 20,
             fontWeight: 900,
-            letterSpacing: -1,
+            letterSpacing: -0.5,
             color: "#ffffff"
           }}>LIVE</span>
           <span style={{
-            fontSize: 20,
+            fontSize: 10,
             fontWeight: 500,
-            letterSpacing: 4,
+            letterSpacing: 2,
             color: "#ffffff",
             opacity: 0.6
           }}>CV</span>
         </div>
-
-        <h2 style={{
-          fontSize: 24,
-          fontWeight: 600,
-          color: "#ffffff",
-          marginBottom: 12
-        }}>
-          Crea tu CV profesional
-        </h2>
-
-        <p style={{
-          fontSize: 16,
-          color: "#999",
-          marginBottom: 32
-        }}>
-          Iniciá sesión para continuar
-        </p>
-
-        <button
-          onClick={handleGoogleLogin}
+        <button 
+          onClick={() => navigate("/login")}
           style={{
-            background: "#ffffff",
-            color: "#0a0a0a",
+            background: "transparent",
             border: "none",
-            padding: "14px 32px",
-            borderRadius: 8,
-            fontSize: 16,
-            fontWeight: 600,
+            color: "#ffffff",
+            padding: "8px 0",
             cursor: "pointer",
-            width: "100%",
+            fontSize: 13,
+            fontWeight: 500,
+            opacity: 0.6,
+            transition: "opacity 0.2s"
+          }}
+          onMouseEnter={e => e.target.style.opacity = "1"}
+          onMouseLeave={e => e.target.style.opacity = "0.6"}
+        >
+          Iniciar sesión
+        </button>
+      </nav>
+
+      {/* Hero Section */}
+      <section style={{
+        maxWidth: 1400,
+        margin: "0 auto",
+        padding: "110px 64px 80px",
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 100
+      }}>
+        {/* Left: Copy */}
+        <div style={{ 
+          maxWidth: 550,
+          animation: "fadeIn 0.8s ease-out",
+          flex: "0 0 auto"
+        }}>
+          <h1 style={{
+            fontSize: "clamp(44px, 5.5vw, 72px)",
+            fontWeight: 900,
+            lineHeight: 1.1,
+            marginBottom: 16,
+            letterSpacing: -1.5,
+            color: "#ffffff"
+          }}>
+            TU PRÓXIMA ENTREVISTA<br/>
+            COMIENZA ACA.
+          </h1>
+
+          <h2 style={{
+            fontSize: "clamp(20px, 2.5vw, 28px)",
+            fontWeight: 400,
+            lineHeight: 1.3,
+            marginBottom: 48,
+            color: "#999",
+            letterSpacing: -0.3
+          }}>
+            Tu CV profesional siempre en línea.
+          </h2>
+
+          <div style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            gap: 12,
-            transition: "all 0.2s"
-          }}
-          onMouseEnter={e => e.target.style.transform = "translateY(-2px)"}
-          onMouseLeave={e => e.target.style.transform = "translateY(0)"}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-          </svg>
-          Continuar con Google
-        </button>
-      </div>
+            gap: 20
+          }}>
+            <button 
+              onClick={() => navigate("/login")}
+              style={{
+                background: "#ffffff",
+                color: "#0a0a0a",
+                border: "none",
+                padding: "18px 40px",
+                borderRadius: 6,
+                fontSize: 15,
+                fontWeight: 600,
+                cursor: "pointer",
+                letterSpacing: 0.5,
+                transition: "all 0.2s",
+                boxShadow: "0 0 0 0 rgba(255,255,255,0.5)"
+              }}
+              onMouseEnter={e => {
+                e.target.style.transform = "translateY(-2px)";
+                e.target.style.boxShadow = "0 8px 32px rgba(255,255,255,0.2)";
+              }}
+              onMouseLeave={e => {
+                e.target.style.transform = "translateY(0)";
+                e.target.style.boxShadow = "0 0 0 0 rgba(255,255,255,0.5)";
+              }}
+            >
+              SUBI O CREA TU CV <span style={{ fontWeight: 900 }}>GRATIS</span>
+            </button>
+
+            {/* Login link - horizontal */}
+            <div style={{
+              fontSize: 14,
+              color: "#666"
+            }}>
+              ya tengo mi cv.{" "}
+              <span 
+                onClick={() => navigate("/login")}
+                style={{
+                  color: "#666",
+                  cursor: "pointer",
+                  fontWeight: 700,
+                  transition: "opacity 0.2s"
+                }}
+                onMouseEnter={e => e.target.style.opacity = "0.7"}
+                onMouseLeave={e => e.target.style.opacity = "1"}
+              >
+                Iniciar sesión →
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Bento Grid */}
+        <div style={{
+          flex: "1",
+          maxWidth: 550,
+          display: "grid",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gap: 16,
+          animation: "fadeIn 1s ease-out 0.3s backwards"
+        }}>
+          {bentoCards.map((card, index) => (
+            <div
+              key={card.id}
+              className={`bento-card-${card.id}`}
+              onMouseEnter={() => setHoveredCard(card.id)}
+              onMouseLeave={() => setHoveredCard(null)}
+              style={{
+                background: hoveredCard === card.id 
+                  ? `linear-gradient(135deg, rgba(${parseInt(card.color.slice(1,3), 16)}, ${parseInt(card.color.slice(3,5), 16)}, ${parseInt(card.color.slice(5,7), 16)}, 0.15) 0%, rgba(${parseInt(card.color.slice(1,3), 16)}, ${parseInt(card.color.slice(3,5), 16)}, ${parseInt(card.color.slice(5,7), 16)}, 0.05) 100%)`
+                  : "rgba(255,255,255,0.03)",
+                border: `1px solid ${hoveredCard === card.id ? `${card.color}60` : "rgba(255,255,255,0.08)"}`,
+                borderRadius: 16,
+                padding: 32,
+                cursor: "pointer",
+                position: "relative",
+                overflow: "hidden",
+                gridColumn: index === 0 ? "span 2" : "span 1",
+                backdropFilter: hoveredCard === card.id ? "blur(20px)" : "blur(0px)"
+              }}
+            >
+              {/* Icon */}
+              <div style={{
+                fontSize: 48,
+                marginBottom: 20,
+                transform: hoveredCard === card.id ? "scale(1.15) rotate(-5deg)" : "scale(1) rotate(0deg)",
+                transition: "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                display: "inline-block"
+              }}>
+                {card.icon}
+              </div>
+
+              {/* Title */}
+              <div style={{
+                fontSize: 18,
+                fontWeight: 700,
+                color: hoveredCard === card.id ? card.color : "#fff",
+                marginBottom: 10,
+                transition: "color 0.3s ease"
+              }}>
+                {card.title}
+              </div>
+
+              {/* Description */}
+              <div style={{
+                fontSize: 14,
+                color: hoveredCard === card.id ? "#d1d1d1" : "#888",
+                lineHeight: 1.6,
+                transition: "color 0.3s ease"
+              }}>
+                {card.desc}
+              </div>
+
+              {/* Animated gradient glow on hover */}
+              <div style={{
+                position: "absolute",
+                top: -150,
+                right: -150,
+                width: 300,
+                height: 300,
+                background: `radial-gradient(circle, ${card.color}60, transparent 70%)`,
+                filter: "blur(50px)",
+                opacity: hoveredCard === card.id ? 1 : 0,
+                transition: "opacity 0.6s ease",
+                pointerEvents: "none",
+                zIndex: 0
+              }} />
+
+              {/* Subtle border glow */}
+              {hoveredCard === card.id && (
+                <div style={{
+                  position: "absolute",
+                  inset: 0,
+                  borderRadius: 16,
+                  background: `linear-gradient(135deg, ${card.color}40, transparent)`,
+                  opacity: 0.1,
+                  pointerEvents: "none"
+                }} />
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

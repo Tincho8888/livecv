@@ -11,6 +11,7 @@ export async function signInWithGoogle() {
 
 export async function signOut() {
   await supabase.auth.signOut();
+  window.location.href = "/";
 }
 
 // ─── CV CRUD ──────────────────────────────────────────────
